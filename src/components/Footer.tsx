@@ -33,11 +33,11 @@ export default function Footer() {
 
   return (
     <div className="text-center w-full my-6 lg:my-10">
-      <p className="">Created by Noah Ford, UMass CICS &apos;26</p>
+      <p className="">Created by Noah Ford, UMass CICS &apos;25</p>
 
       <div className="flex items-center h-full w-full justify-center">
         <a
-          href="https://github.com/NFordUMass/Hot-Seat"
+          href="https://github.com/nhford/Hot-Seat"
           target="_blank"
           rel="noopener noreferrer"
           className="p-2"
