@@ -1,0 +1,90 @@
+---
+import { DEFAULT_COACH_IMAGE } from "@/lib/coaches/images";
+
+const selectShell =
+  "relative inline-flex items-center rounded border border-white text-white opacity-80 min-h-10 px-3 py-1.5 box-border";
+---
+
+<div class="flex flex-col gap-4">
+  <div class="flex flex-col xl:flex-row gap-4">
+    <div class="w-full xl:w-1/2 min-w-0">
+      <p class="text-sm md:text-base py-1">Next Season,</p>
+      <div class="flex flex-row flex-wrap gap-2 py-1 md:py-2 items-center">
+        <div
+          class:list={[selectShell]}
+          style="min-width: clamp(7rem, 40%, 12rem);"
+          aria-hidden
+        >
+          <span class="absolute -top-2 left-2 px-1 text-xs leading-none bg-neutral-800"
+            >Coach</span
+          >
+          <span class="text-sm text-white/40">—</span>
+        </div>
+        <p class="text-sm md:text-base py-1">goes</p>
+      </div>
+      <div class="flex flex-row flex-wrap gap-2 py-1 md:py-2 items-center">
+        <div
+          class:list={[selectShell]}
+          style="min-width: clamp(4.5rem, 25%, 7rem);"
+          aria-hidden
+        >
+          <span class="absolute -top-2 left-2 px-1 text-xs leading-none bg-neutral-800"
+            >Record</span
+          >
+          <span class="text-sm text-white/40">—</span>
+        </div>
+        <p class="text-sm md:text-base py-1">and</p>
+        <div
+          class:list={[selectShell]}
+          style="min-width: clamp(6rem, 35%, 10rem);"
+          aria-hidden
+        >
+          <span
+            class="absolute -top-2 left-2 px-1 text-xs leading-none bg-neutral-800"
+            >Playoff Result</span
+          >
+          <span class="text-sm text-white/40">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="w-full xl:w-1/2 min-w-0">
+      <div
+        class="w-full flex flex-col sm:flex-row items-center sm:items-end gap-3 sm:gap-4"
+      >
+        <div class="shrink-0 text-left order-2 sm:order-1 sm:pb-2">
+          <p class="text-[clamp(0.75rem,1.25vw,1.5rem)]">
+            Projected Heat <span class="hidden 2xl:inline">Index</span>
+          </p>
+          <div>
+            <p class="animate-pulse font-bold text-2xl 2xl:text-4xl text-white">
+              Loading...
+            </p>
+            <p class="text-[clamp(0.75rem,1.25vw,1.5rem)]">Current: —</p>
+          </div>
+        </div>
+        <div
+          class="min-w-0 flex-1 flex justify-center sm:justify-end order-1 sm:order-2"
+        >
+          <img
+            src={DEFAULT_COACH_IMAGE}
+            alt=""
+            class="w-[clamp(6rem,20vw,16rem)] max-w-full"
+            decoding="async"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-4">
+    <div class="border-t border-white/40 pt-3">
+      <h2 class="text-base md:text-lg font-semibold text-center">
+        Previous Scenarios
+      </h2>
+    </div>
+    <p class="text-center text-sm md:text-base text-white/70">
+      none yet, try a new scenario!
+    </p>
+    <div class="border-t border-white/40"></div>
+  </div>
+</div>

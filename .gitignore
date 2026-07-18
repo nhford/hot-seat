@@ -28,3 +28,7 @@ pnpm-debug.log*
 
 # Supabase
 supabase/.temp
+
+# Local scratch / source assets (do not ship)
+public/images/coaches/temp/
+public/favicon-archive.ico

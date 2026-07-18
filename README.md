@@ -1,51 +1,66 @@
 # Hot Seat
 
-## Check it Out!
+**Live:** [hot-seat.netlify.app](https://hot-seat.netlify.app/)
 
-[hot-seat.netlify.app/](https://hot-seat.netlify.app/)
+Interactive dashboard + counterfactual engine for an NFL head-coach firing model. Built by Noah Ford (MSCS, Carnegie Mellon ’26) as a sports-analytics portfolio project: predictive modeling, feature design, and a UI meant for non-technical stakeholders.
 
-## Overview
+## What it does
 
-Hot Seat is both a dashboard of a Machine Learning model that predicts the the likelihood of each NFL head coach being fired and engine for predicting next season's outcomes with real-time model integration. What's more, the historical training data for the model is included and visualized for each coach from the past 30 years (1996-2025).
+- **Standings** — Browse historical and current coach-seasons by year, team, or across the full panel. Each row shows a **heat** score (model probability of firing), year-over-year Δ, and outcome (Fired / Safe / TBD). Expand a row for resume context, awards, and heat history.
+- **What If?** — Change next-season record and playoff depth for a coach; the app builds the model’s feature vector and calls a live scoring API.
+- **How It Works** — Short project brief: problem framing, feature summary, and how to read the page.
 
-## Key Features:
+Heat is a calibrated risk score in \([0, 1]\); above **0.5** the model predicts a firing-like outcome. Treat it as directional decision support, not a guarantee.
 
-- Integrated Machine Learning prediction engine hosted on Render and callable from user inputs
-- Fully integrated backend with Supabase, dynamically calling SQL tables to load based on user input of filter criteria
-- Graph.js interactive visualizations for the historical data of each coach
-- Hosted on Netlify to manage frontend requests
+## Model (brief)
 
-### Technologies Used
+- **Task:** Binary classification — does this coach-season resemble seasons that ended in a firing?
+- **Algorithm:** LightGBM on a last-5-season sequence plus career/context features (**54** inputs), e.g. win%, playoff round, Coach of the Year signals, tenure index, prior HC stops, Super Bowl history, and the franchise’s three pre-hire seasons.
+- **Data:** Season and playoff history sourced from [Pro Football Reference](https://www.pro-football-reference.com/); training and batch scoring live in [`hot-seat-backend`](https://github.com/nhford/hot-seat-backend); the fitted model is served on Render for interactive What If calls.
+- **Serving:** `POST /predict` with `named_features` → class probabilities; the UI uses \(P(\text{fired})\).
 
-#### Frontend:
+## Stack
 
-- React + TypeScript
-- TailwindCSS
-- Graph.js
-- Astro Supabase starter
+| Layer | Choice |
+| --- | --- |
+| Frontend | Astro + React + TypeScript, Tailwind CSS |
+| Data | Supabase (`coach_year_v2`, coach aggregates) |
+| Viz | Chart.js (expanded coach history) |
+| Model API | FastAPI on Render (`coaches-svfw`) |
+| Hosting | Netlify |
 
-#### Backend:
+## Local development
 
-- Machine Learning model hosted on Render
-- Scikit-learn for the Machine Learning model in Python
-- Jupyter Notebooks with scrapers from Pro Football Reference for historical data
+```bash
+npm install
+# set SUPABASE_DATABASE_URL and SUPABASE_ANON_KEY (see Netlify / .env)
+npm run dev   # or: netlify dev
+```
 
-#### Database:
+Required env (server-side Astro):
 
-- Supabase for SQL storage
+- `SUPABASE_DATABASE_URL`
+- `SUPABASE_ANON_KEY`
 
-## Next Steps:
+## Project layout (frontend)
 
-### Model features
+```
+src/
+  features/standings/   # heat table, filters, expanded resume
+  features/what-if/     # counterfactual UI + feature assembly
+  features/how-it-works/
+  lib/coaches/          # sorting, teams, images
+  layout/               # shell, header, footer
+```
 
-- Sentiment analysis of local media to gauge public perception of coach
-- Count of how many different QBs started games for that coach within a season, and/or within their tenure
-- Duration of tenure of preceding coach
-- h2h record against division rivals
+## Notes for recruiters
 
-### Site features
+- End-to-end path: scrape/assemble data → train LightGBM → store season scores → ship an interactive UI that rescores counterfactuals against the same model.
+- Emphasis on **communicating risk** (heat index, fired highlighting, resume drill-down) as much as on raw accuracy.
+- Honest limits: season stats miss locker-room / media dynamics; the training labels include historically debatable firings.
 
-- Unique image for each coach, each season
-- Historical logos for older seasons
-- Within coach row dropdown, enable bar chart plotting of other features against heat
-- Within coach row trophy case, have h2h against division rivals
+## Possible next work
+
+- Media sentiment / market and salary features
+- Stronger evaluation reporting (calibration, year holdouts)
+- Historical team logos and richer H2H / trophy-case views
