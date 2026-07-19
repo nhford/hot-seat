@@ -1,0 +1,46 @@
+---
+import "../styles/globals.css";
+import Header from "./Header.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title } = Astro.props;
+const description =
+  Astro.props.description ??
+  "Hot Seat: a LightGBM classifier and interactive dashboard that estimates NFL head-coach firing risk from season and career context.";
+const siteUrl = "https://hot-seat.netlify.app";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="author" content="Noah Ford" />
+    <meta name="theme-color" content="#262626" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={siteUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${siteUrl}/favicon.ico`} />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${siteUrl}/favicon.ico`} />
+
+    <link rel="icon" href="/favicon.ico" />
+    <title>{title}</title>
+  </head>
+  <body class="px-2 antialiased text-white bg-neutral-800 sm:px-8">
+    <Header />
+    <main class="w-full grow">
+      <slot />
+    </main>
+  </body>
+</html>

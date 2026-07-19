@@ -1,70 +1,188 @@
 ---
-import Alert from "../components/Alert.astro";
-import Layout from "../components/Layout.astro";
-import { supabase } from "../utils/database";
-import Content from "../components/Content";
-import WhatIf from "../components/WhatIf";
-import type { coachRow, seasonRow } from "../../supabase/types";
-import { Games, get_random_input } from "../utils/util";
-import How_It_Works from "../components/How_It_Works";
-import Footer from "../components/Footer";
+import Alert from "@/layout/Alert.astro";
+import Layout from "@/layout/Layout.astro";
+import { supabase } from "@/lib/supabase";
+import Content from "@/features/standings/Content";
+import WhatIf from "@/features/what-if/WhatIf";
+import type { coachRow, seasonRow } from "@/types/coaches";
+import HowItWorks from "@/features/how-it-works/HowItWorks";
+import Footer from "@/layout/Footer";
+import { buildWhatIfCoaches } from "@/features/what-if/scenario";
+import WhatIfFallback from "@/features/what-if/WhatIfFallback.astro";
+import { maxYear } from "@/lib/coaches/sort";
 
 export const prerender = false;
 
-const tableName = "coach_year";
+const tableName = "coach_year_v2";
 
 let heat_index: seasonRow[] | null = null;
 let coaches: coachRow[] = [];
+let whatIfSource: ReturnType<typeof buildWhatIfCoaches> = [];
+let fallbackYears: number[] = [];
+let fallbackDefaultYear = 0;
 
-// Fetch frameworks data from Supabase if connection is set up
 if (supabase) {
-  const { data, error: err } = await supabase.from(tableName).select("*");
-  console.log(err);
-  const { data: temp, error: _ } = await supabase
-    .from("agg_by_coach_view")
-    .select("*");
-  if (temp == null) {
-    coaches = [];
-  }
-  coaches = temp as coachRow[];
+  const { data } = await supabase.from(tableName).select("*");
+  const { data: temp } = await supabase.from("agg_by_coach_view").select("*");
+  coaches = (temp as coachRow[]) ?? [];
   heat_index = data;
+  whatIfSource = heat_index ? buildWhatIfCoaches(heat_index) : [];
+
+  if (heat_index?.length) {
+    const currentYear = maxYear(heat_index);
+    const minYear = Math.min(...heat_index.map((row) => row.year));
+    fallbackYears = Array.from(
+      { length: currentYear - minYear + 1 },
+      (_, i) => currentYear - i,
+    );
+    fallbackDefaultYear = Math.max(minYear, currentYear - 1);
+  }
 }
+
+const btnBase =
+  "inline-flex items-center justify-center whitespace-nowrap rounded border border-white";
+const btnSm = "min-h-9 px-2.5 py-1.5 text-sm shrink-0";
+const btnIdle = "bg-transparent text-white";
+const btnActive = "bg-white text-black font-bold";
 ---
 
-<Layout title="Hot Seat">
+<Layout title="Hot Seat | NFL Coach Firing Risk">
   {
     supabase ? (
       heat_index ? (
         <div class="min-h-screen flex flex-col">
-          <div class="flex flex-col md:flex-row gap-4 flex-grow">
+          <div class="flex flex-col md:flex-row md:gap-0 flex-grow">
             {/* Hot Seat Standings */}
-            <div class="w-full md:w-1/2 overflow-y-scroll">
-              <h1 class="my-2 text-2xl md:text-4xl lg:text-5xl xl:text-6xl text-center font-bold">
-                Who is on the Hot Seat?
+            <div class="w-full md:flex-1 min-w-0">
+              <h1 class="my-2 text-xl md:text-2xl lg:text-3xl text-center font-bold">
+                NFL Head Coaches
               </h1>
-              <Content source={heat_index} coaches={coaches} client:only />
+              <Content
+                source={heat_index}
+                coaches={coaches}
+                client:only="react"
+              >
+                <div slot="fallback" class="h-full">
+                  <div class="flex flex-wrap py-2 gap-2 justify-center items-center">
+                    <p class="text-sm md:text-base mr-1">group by:</p>
+                    {(["Year", "Team", "All"] as const).map((label) => (
+                      <button
+                        type="button"
+                        disabled
+                        aria-pressed={label === "Year"}
+                        class:list={[
+                          btnBase,
+                          "w-20 min-h-9 px-2 py-1.5 text-sm opacity-80",
+                          label === "Year" ? btnActive : btnIdle,
+                        ]}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div class="flex items-center gap-2 py-2">
+                    <p class="shrink-0 text-sm md:text-base">filter by:</p>
+                    <div class="relative min-w-0 flex-1">
+                      <div class="flex w-full overflow-x-auto gap-2 px-1">
+                        {fallbackYears.map((y, index) => {
+                          const prev = fallbackYears[index - 1];
+                          const showDecadeLine =
+                            prev != null &&
+                            Math.floor(prev / 10) !== Math.floor(y / 10);
+                          const active = y === fallbackDefaultYear;
+                          return (
+                            <span class="contents">
+                              {showDecadeLine ? (
+                                <div
+                                  aria-hidden
+                                  class="mx-0.5 h-7 w-px shrink-0 self-center bg-white/55"
+                                />
+                              ) : null}
+                              <button
+                                type="button"
+                                disabled
+                                aria-pressed={active}
+                                class:list={[
+                                  btnBase,
+                                  btnSm,
+                                  "opacity-80",
+                                  active ? btnActive : btnIdle,
+                                ]}
+                              >
+                                {y}
+                              </button>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="w-full overflow-x-auto">
+                    <table class="heat-table w-full table-fixed text-left bg-white text-black rounded-lg">
+                      <colgroup>
+                        <col class="w-12 md:w-16 lg:w-20" />
+                        <col class="w-10 md:w-16 lg:w-20" />
+                        <col />
+                        <col class="w-12 md:w-20" />
+                        <col class="w-11 md:w-20" />
+                        <col class="w-14 md:w-20" />
+                      </colgroup>
+                      <thead>
+                        <tr class="text-base md:text-lg border-b">
+                          <th class="px-1 py-4 whitespace-nowrap text-center">
+                            Year
+                          </th>
+                          <th class="px-1 py-4 whitespace-nowrap text-center">
+                            Team
+                          </th>
+                          <th class="px-1 py-4 whitespace-nowrap text-center">
+                            Coach
+                          </th>
+                          <th class="px-1 py-4 whitespace-nowrap text-center">
+                            Heat
+                          </th>
+                          <th class="px-1 py-4 whitespace-nowrap text-center">
+                            Δ
+                          </th>
+                          <th class="px-1 py-4 whitespace-nowrap text-center">
+                            Result
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td
+                            colspan="6"
+                            class="px-1 py-8 text-center text-sm md:text-base text-neutral-500"
+                          >
+                            Loading...
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </Content>
             </div>
-            {/* What If Engine*/}
-            <div class="w-full md:w-1/2 overflow-y-scroll">
-              <h1 class="my-2 text-2xl md:text-4xl lg:text-5xl xl:text-6xl text-center font-bold">
+            <hr class="md:hidden w-full border-0 border-t border-white/30 my-2" />
+            <div
+              aria-hidden
+              class="hidden md:block w-px shrink-0 self-stretch bg-white/30 mx-4 lg:mx-6"
+            />
+            {/* How it works + What If Engine */}
+            <div class="w-full md:flex-1 min-w-0">
+              <div>
+                <h1 class="my-2 text-xl md:text-2xl lg:text-3xl text-center font-bold">
+                  How It Works
+                </h1>
+                <HowItWorks client:load />
+              </div>
+              <h1 class="my-2 text-xl md:text-2xl lg:text-3xl text-center font-bold">
                 What If?
               </h1>
-              <WhatIf
-                source={
-                  heat_index
-                    ? heat_index
-                        .filter((row) => row.year == 2025)
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                    : []
-                }
-                client:only
-              />
-              <div>
-                <h1 class="my-2 text-2xl md:text-4xl lg:text-5xl xl:text-6xl text-center font-bold">
-                  How Does it Work?
-                  <How_It_Works />
-                </h1>
-              </div>
+              <WhatIf source={whatIfSource} client:only="react">
+                <WhatIfFallback slot="fallback" />
+              </WhatIf>
             </div>
           </div>
           <div class="mt-auto">
