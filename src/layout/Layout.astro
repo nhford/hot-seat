@@ -36,6 +36,13 @@ const siteUrl = "https://hot-seat.netlify.app";
 
     <link rel="icon" href="/favicon.ico" />
     <title>{title}</title>
+    {/* Wake the Render What-If API on first paint so a cold start can finish before the user interacts. */}
+    <script is:inline>
+      fetch("https://coaches-svfw.onrender.com/", {
+        mode: "no-cors",
+        keepalive: true,
+      }).catch(() => {});
+    </script>
   </head>
   <body class="px-2 antialiased text-white bg-neutral-800 sm:px-8">
     <Header />

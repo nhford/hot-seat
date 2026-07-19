@@ -11,6 +11,7 @@ interface Props {
 }
 
 const HISTORY_LIMIT = 3;
+const PREDICT_URL = "https://coaches-svfw.onrender.com/predict";
 
 function sameSnapshot(
   a: WhatIfSnapshot,
@@ -80,7 +81,7 @@ export default function WhatIf({ source }: Props) {
     const startTime = Date.now();
     const id = ++requestId.current;
 
-    fetch("https://coaches-svfw.onrender.com/predict", {
+    fetch(PREDICT_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
