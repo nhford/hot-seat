@@ -103,8 +103,7 @@ export default function HeatTable({
     const dir = "asc";
     setSorted({ key: key, dir: dir });
     setPage(1);
-    const first = source[0];
-    setExpanded(first ? `${first.id}_${first.year}` : "");
+    setExpanded("");
   }, [mode.by, source]);
 
   const total = coaches.length;
