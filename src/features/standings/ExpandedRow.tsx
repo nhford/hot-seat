@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import type { coachRow, seasonRow } from "@/types/coaches";
 import { filterCoachRowByYear } from "@/lib/coaches/sort";
 import { hexToRgba } from "@/lib/coaches/images";
@@ -13,6 +13,19 @@ interface Props {
   history: coachRow;
   rowData: seasonRow;
   currentYear: number;
+}
+
+/** Matches HeatTable's mobile Result-column hide (max-width: 767px). */
+function useMobileHeatCols() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia("(max-width: 767px)");
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia("(max-width: 767px)").matches,
+    () => false,
+  );
 }
 
 function space_labels_helper<X>(
@@ -44,6 +57,7 @@ export default function ExpandedRow({
   rowData,
   currentYear,
 }: Props) {
+  const mobile = useMobileHeatCols();
   const [filter, setFilter] = useState({
     filter: false,
     year: rowData.year,
@@ -112,7 +126,8 @@ export default function ExpandedRow({
 
   return (
     <tr className="w-full">
-      <td colSpan={6} className="p-2.5 bg-neutral-100">
+      {/* Result col is display:none below md — colspan must match visible cols or the parent row collapses */}
+      <td colSpan={mobile ? 5 : 6} className="p-2.5 bg-neutral-100">
         <div className="relative">
           <div className="flex flex-row text-center justify-center items-center text relative">
             <div className="absolute w-full h-0.5 bg-gray-500"></div>

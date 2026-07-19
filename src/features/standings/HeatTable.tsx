@@ -123,6 +123,12 @@ export default function HeatTable({
 
   return (
     <div className="w-full">
+      {/* Injected here because custom rules in globals.css are dropped by the Tailwind build */}
+      <style>{`
+        @media (max-width: 767px) {
+          .heat-col-mobile-hide { display: none !important; }
+        }
+      `}</style>
       <div className="w-full overflow-x-auto">
         <table className="heat-table w-full table-fixed text-left bg-white text-black rounded-lg">
           <colgroup>
@@ -131,7 +137,7 @@ export default function HeatTable({
             <col />
             <col className="w-12 md:w-20" />
             <col className="w-11 md:w-20" />
-            <col className="w-14 md:w-20" />
+            <col className="heat-col-mobile-hide w-14 md:w-20" />
           </colgroup>
           <thead>
             <tr className="text-base md:text-lg border-b">
@@ -142,12 +148,16 @@ export default function HeatTable({
                   { key: "name", label: "Coach" },
                   { key: "prob", label: "Heat" },
                   { key: "delta", label: "Δ" },
-                  { key: "fired", label: "Result" },
+                  { key: "fired", label: "Result", mobileHidden: true },
                 ] as const
               ).map((col) => (
                 <th
                   key={`label_${col.key}`}
                   className={`px-1 py-4 whitespace-nowrap text-center cursor-pointer transition-colors hover:bg-neutral-100 hover:underline decoration-black underline-offset-2 ${
+                    "mobileHidden" in col && col.mobileHidden
+                      ? "heat-col-mobile-hide"
+                      : ""
+                  } ${
                     sorted.key === col.key
                       ? "bg-neutral-200 hover:bg-neutral-300"
                       : ""
