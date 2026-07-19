@@ -29,7 +29,6 @@ export default function CoachHistory({ history }: Props) {
     losses_plyf: 0,
   };
   let min_start = 0;
-  const wins = [];
   const rows: tableRow[] = history.teams.reduce(
     (acc: tableRow[], team: string, i: number) => {
       if (i == 0) {

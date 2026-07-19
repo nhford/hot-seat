@@ -49,8 +49,6 @@ export default function CoachChart({
   outcomes,
   records,
   records_all,
-  colors_1,
-  colors_2,
 }: Props) {
   // Define the data object with the correct type
   const data: ChartData<"bar" | "line"> = {
@@ -88,7 +86,7 @@ export default function CoachChart({
           align: "center",
           offset: 10,
           color: "gray",
-          formatter: (value, context) => records[context.dataIndex],
+          formatter: (_value, context) => records[context.dataIndex],
         },
         barPercentage: 1.0,
         categoryPercentage: 0.8,
@@ -129,7 +127,7 @@ export default function CoachChart({
           text: "Season",
         },
         ticks: {
-          callback: function (val, index) {
+          callback: function (_val, index) {
             return labels[index];
           },
         },
@@ -162,7 +160,7 @@ export default function CoachChart({
         max: 1,
         reverse: true,
         ticks: {
-          callback: function (val, index) {
+          callback: function (_val, index) {
             return records[index];
           },
           display: false,

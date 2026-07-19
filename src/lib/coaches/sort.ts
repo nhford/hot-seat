@@ -136,8 +136,9 @@ export function handleSort(helper: sortingHelper) {
   }
   helper.setSorted({ key: helper.key, dir: dir });
   let i = dir == "asc" ? 1 : -1;
+  const key = helper.key;
 
-  if (helper.key === "delta") {
+  if (key === "delta") {
     const byId = new Map(
       (helper.coachRows ?? []).map((coach) => [coach.id, coach]),
     );
@@ -152,8 +153,6 @@ export function handleSort(helper: sortingHelper) {
   }
 
   helper.setData(
-    [...helper.data].sort((a: seasonRow, b: seasonRow) =>
-      a[helper.key] < b[helper.key] ? i : -i,
-    ),
+    [...helper.data].sort((a, b) => (a[key] < b[key] ? i : -i)),
   );
 }

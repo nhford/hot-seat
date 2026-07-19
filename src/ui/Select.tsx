@@ -91,7 +91,7 @@ export default function SelectInput({
         <Select
           labelId={name ? `${id}-label` : undefined}
           id={id}
-          value={value}
+          value={String(value)}
           label={name || undefined}
           notched={name ? undefined : false}
           onChange={onChange}
@@ -107,7 +107,7 @@ export default function SelectInput({
         >
           {options.map((option, i) => (
             <MenuItem
-              value={i}
+              value={String(i)}
               key={`${id}_${i}`}
               sx={{
                 fontFamily: "inherit",
