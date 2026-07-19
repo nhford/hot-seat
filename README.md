@@ -33,11 +33,11 @@ Heat is a calibrated risk score in \([0, 1]\); above **0.5** the model predicts 
 
 ```bash
 npm install
-# set SUPABASE_DATABASE_URL and SUPABASE_ANON_KEY (see Netlify / .env)
-npm run dev   # or: netlify dev
+cp .env.example .env   # then fill in real values
+npm run dev            # or: netlify dev
 ```
 
-Required env (server-side Astro):
+Required env (server-side Astro) — see [`.env.example`](.env.example):
 
 - `SUPABASE_DATABASE_URL`
 - `SUPABASE_ANON_KEY`
@@ -64,3 +64,7 @@ src/
 - Media sentiment / market and salary features
 - Stronger evaluation reporting (calibration, year holdouts)
 - Historical team logos and richer H2H / trophy-case views
+
+## License
+
+MIT — see [LICENSE](LICENSE).
