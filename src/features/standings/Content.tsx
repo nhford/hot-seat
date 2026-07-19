@@ -51,7 +51,7 @@ export default function Content({ source, coaches }: Props) {
 
   return (
     <div className="h-full">
-      {/* Toggle: By Year vs By Team vs By Heat */}
+      {/* Toggle: By Year vs By Team vs By Heat (All hidden below md) */}
       <div className="flex flex-wrap py-2 gap-2 justify-center items-center">
         <p className="text-sm md:text-base mr-1">group by:</p>
         {(["year", "team", "heat"] as filterKey[]).map((filterKey) => (
@@ -59,7 +59,7 @@ export default function Content({ source, coaches }: Props) {
             key={filterKey}
             active={mode.by === filterKey}
             size="sm"
-            className="w-20"
+            className={filterKey === "heat" ? "max-md:hidden w-20" : "w-20"}
             onClick={() => {
               if (mode.by === filterKey) return;
               setMode({ by: filterKey });

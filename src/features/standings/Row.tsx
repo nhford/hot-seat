@@ -78,7 +78,10 @@ export default function Row({
             "text-center text-base md:text-lg font-bold",
           )}
         >
-          {rowData.year}
+          <span className="md:hidden">
+            {`'${(rowData.year % 100).toString().padStart(2, "0")}`}
+          </span>
+          <span className="hidden md:block">{rowData.year}</span>
         </td>
         <td className={cellClass(sortKey, "team", fired, "px-0.5 text-center")}>
           <img
@@ -92,7 +95,7 @@ export default function Row({
             sortKey,
             "name",
             fired,
-            "max-w-0 px-1 text-center text-base md:text-lg font-bold group-hover:underline decoration-black underline-offset-2",
+            "max-w-0 px-1 text-center text-sm md:text-lg font-bold group-hover:underline decoration-black underline-offset-2",
           )}
           title={rowData.name}
         >
@@ -123,7 +126,7 @@ export default function Row({
             sortKey,
             "fired",
             fired,
-            "text-center text-base md:text-lg",
+            "heat-col-mobile-hide text-center text-base md:text-lg",
           )}
         >
           {rowData.year != currentYear
