@@ -38,6 +38,7 @@ export default function WhatIf({ source }: Props) {
   const [result, setResult] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<WhatIfSnapshot[]>([]);
+  const [hasLiveResult, setHasLiveResult] = useState(false);
   const isFirstRender = useRef(true);
   const lastCompleted = useRef<WhatIfSnapshot | null>(null);
   const requestId = useRef(0);
@@ -103,6 +104,7 @@ export default function WhatIf({ source }: Props) {
         }
 
         setResult(prediction);
+        setHasLiveResult(true);
         lastCompleted.current = {
           coach: nextCoach,
           record: nextRecord,
@@ -165,6 +167,12 @@ export default function WhatIf({ source }: Props) {
           runPrediction(coach, record, rnd);
         }}
       />
+      {!hasLiveResult ? (
+        <p className="text-center text-xs md:text-sm text-white/55">
+          The first live prediction may take up to ~1 minute while the model
+          server wakes from a cold start.
+        </p>
+      ) : null}
 
       <div className="flex flex-col gap-4">
         <div className="border-t border-white/40 pt-3">
