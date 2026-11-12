@@ -16,7 +16,7 @@ const DETAILS: { id: string; title: string; body: ReactNode }[] = [
   {
     id: "drivers",
     title: "What drives the prediction?",
-    body: "The model scores a coach-season from a last-5-season sequence (age, win%, playoff round, Coach of the Year share/rank, tenure index) plus career context: prior head-coaching stops, Super Bowl history, years since last HC job, and the team’s three pre-hire seasons. What If writes the next season token and scores live.",
+    body: "The model scores a coach-season from a last-5-season sequence (age, win%, playoff round, Coach of the Year share/rank, tenure index) plus career context: prior head-coaching stops, Super Bowl history, years since last HC job, and the team’s three pre-hire seasons. What If looks up a precomputed score for each record and playoff result.",
   },
   {
     id: "limits",
@@ -38,7 +38,7 @@ const DETAILS: { id: string; title: string; body: ReactNode }[] = [
         >
           this sibling repo
         </a>
-        ; the model is served as an API on Render (called live by What If).
+        ; What If reads a precomputed grid of record and playoff scores.
       </>
     ),
   },

@@ -1,17 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   get_what_if_init,
-  buildWhatIfInputs,
+  lookupWhatIfScore,
   type WhatIfCoach,
+  type WhatIfScores,
 } from "./scenario";
 import WhatIfScenario, { type WhatIfSnapshot } from "./WhatIfScenario";
 
 interface Props {
   source: WhatIfCoach[];
+  scores?: WhatIfScores;
 }
 
 const HISTORY_LIMIT = 3;
-const PREDICT_URL = "https://coaches-svfw.onrender.com/predict";
 
 function sameSnapshot(
   a: WhatIfSnapshot,
@@ -26,7 +27,7 @@ function sameSnapshot(
   );
 }
 
-export default function WhatIf({ source }: Props) {
+export default function WhatIf({ source, scores = {} }: Props) {
   const [row_index, setRow_Index] = useState(() =>
     source.length ? Math.floor(Math.random() * source.length) : 0,
   );
@@ -34,36 +35,35 @@ export default function WhatIf({ source }: Props) {
   const init = get_what_if_init(coach?.display.id ?? "");
   const [record, setRecord] = useState(init.record);
   const [round, setRound] = useState(init.round);
-
-  const [result, setResult] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<WhatIfSnapshot[]>([]);
-  const [hasLiveResult, setHasLiveResult] = useState(false);
-  const isFirstRender = useRef(true);
   const lastCompleted = useRef<WhatIfSnapshot | null>(null);
-  const requestId = useRef(0);
+  const seeded = useRef(false);
 
-  // Initial seed for the randomly selected coach (once on mount)
-  useEffect(() => {
-    if (!coach) return;
-    const snapshot: WhatIfSnapshot = {
-      coach,
-      record: init.record,
-      round: init.round,
-      result: init.seed,
-    };
-    const seedRequest = ++requestId.current;
-    const timeout = setTimeout(() => {
-      if (requestId.current !== seedRequest) return;
-      setResult(snapshot.result);
-      lastCompleted.current = snapshot;
-    }, 1000);
-    return () => clearTimeout(timeout);
-    // intentionally mount-only; coach/init captured from first render
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  if (!seeded.current) {
+    seeded.current = true;
+    if (coach) {
+      const value = lookupWhatIfScore(
+        scores,
+        coach.display.id,
+        init.record,
+        init.round,
+      );
+      if (value != null) {
+        lastCompleted.current = {
+          coach,
+          record: init.record,
+          round: init.round,
+          result: value,
+        };
+      }
+    }
+  }
 
-  const runPrediction = (
+  const result = coach
+    ? lookupWhatIfScore(scores, coach.display.id, record, round)
+    : null;
+
+  const remember = (
     nextCoach: WhatIfCoach,
     nextRecord: number,
     nextRound: number,
@@ -74,69 +74,23 @@ export default function WhatIf({ source }: Props) {
       !sameSnapshot(completed, nextCoach, nextRecord, nextRound)
     ) {
       setHistory((prev) => [completed, ...prev].slice(0, HISTORY_LIMIT));
-      lastCompleted.current = null;
     }
-
-    setLoading(true);
-    const timeout = 1000;
-    const startTime = Date.now();
-    const id = ++requestId.current;
-
-    fetch(PREDICT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        named_features: buildWhatIfInputs(nextCoach, nextRecord, nextRound),
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) throw new Error(`Predict failed: ${response.status}`);
-        return response.json();
-      })
-      .then((response) => {
-        if (id !== requestId.current) return;
-
-        const prediction = response?.prediction?.[0]?.[1];
-        if (typeof prediction !== "number") {
-          throw new Error("Unexpected predict response");
-        }
-
-        setResult(prediction);
-        setHasLiveResult(true);
-        lastCompleted.current = {
-          coach: nextCoach,
-          record: nextRecord,
-          round: nextRound,
-          result: prediction,
-        };
-        const elapsedTime = Date.now() - startTime;
-        const remainingTime = Math.max(0, timeout - elapsedTime);
-
-        setTimeout(() => {
-          if (id === requestId.current) setLoading(false);
-        }, remainingTime);
-      })
-      .catch(() => {
-        if (id !== requestId.current) return;
-        setLoading(false);
-      });
+    const value = lookupWhatIfScore(
+      scores,
+      nextCoach.display.id,
+      nextRecord,
+      nextRound,
+    );
+    lastCompleted.current =
+      value == null
+        ? null
+        : {
+            coach: nextCoach,
+            record: nextRecord,
+            round: nextRound,
+            result: value,
+          };
   };
-
-  // coach / source changes — reset scenario defaults for that coach
-  useEffect(() => {
-    if (!source[row_index]) return;
-    const next = source[row_index];
-    const nextInit = get_what_if_init(next.display.id);
-    setRecord(nextInit.record);
-    setRound(nextInit.round);
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-    } else {
-      runPrediction(next, nextInit.record, nextInit.round);
-    }
-  }, [row_index, source]);
 
   if (!coach) return null;
 
@@ -147,32 +101,32 @@ export default function WhatIf({ source }: Props) {
         record={record}
         round={round}
         result={result}
-        loading={loading}
         coachOptions={source.map((c) => c.display.name)}
         rowIndex={row_index}
         idPrefix="what-if"
         onCoachChange={(index) => {
-          if (Number.isFinite(index) && index >= 0 && index < source.length) {
-            setRow_Index(index);
+          if (!Number.isFinite(index) || index < 0 || index >= source.length) {
+            return;
           }
+          if (index === row_index) return;
+          const next = source[index];
+          const nextInit = get_what_if_init(next.display.id);
+          remember(next, nextInit.record, nextInit.round);
+          setRow_Index(index);
+          setRecord(nextInit.record);
+          setRound(nextInit.round);
         }}
         onRecordChange={(rec) => {
           if (!Number.isFinite(rec)) return;
           setRecord(rec);
-          runPrediction(coach, rec, round);
+          remember(coach, rec, round);
         }}
         onRoundChange={(rnd) => {
           if (!Number.isFinite(rnd)) return;
           setRound(rnd);
-          runPrediction(coach, record, rnd);
+          remember(coach, record, rnd);
         }}
       />
-      {!hasLiveResult ? (
-        <p className="text-center text-xs md:text-sm text-white/55">
-          The first live prediction may take up to ~1 minute while the model
-          server wakes from a cold start.
-        </p>
-      ) : null}
 
       <div className="flex flex-col gap-4">
         <div className="border-t border-white/40 pt-3">
