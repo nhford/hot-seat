@@ -14,7 +14,6 @@ interface Props {
   record: number;
   round: number;
   result: number | null;
-  loading?: boolean;
   readOnly?: boolean;
   coachOptions?: string[];
   rowIndex?: number;
@@ -29,7 +28,6 @@ export default function WhatIfScenario({
   record,
   round,
   result,
-  loading = false,
   readOnly = false,
   coachOptions,
   rowIndex = 0,
@@ -97,8 +95,7 @@ export default function WhatIfScenario({
       <div className="w-full xl:w-1/2 min-w-0">
         <ImageWrapper
           rowData={coach.display}
-          heat={typeof result === "number" ? result.toFixed(2) : "Loading..."}
-          loading={loading}
+          heat={typeof result === "number" ? result.toFixed(2) : "—"}
         />
       </div>
     </div>

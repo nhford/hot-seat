@@ -4,11 +4,12 @@ import CoachImage from "@/ui/CoachImage";
 interface Props {
   rowData: seasonRow;
   heat: string;
-  loading: boolean;
 }
 
-export default function ImageWrapper({ rowData, heat, loading }: Props) {
+export default function ImageWrapper({ rowData, heat }: Props) {
   const threshold = 0.33;
+  const value = Number(heat);
+  const hasScore = Number.isFinite(value);
 
   return (
     <div className="w-full flex flex-col sm:flex-row items-center sm:items-end gap-3 sm:gap-4">
@@ -18,21 +19,21 @@ export default function ImageWrapper({ rowData, heat, loading }: Props) {
         </p>
         <div>
           <p
-            className={`font-bold ${
-              heat === "Loading..." || loading
-                ? "animate-pulse text-2xl 2xl:text-4xl text-white"
-                : "text-4xl md:text-6xl 2xl:text-7xl"
+            className={`font-bold text-4xl md:text-6xl 2xl:text-7xl${
+              hasScore ? "" : " text-white"
             }`}
-            style={{
-              color:
-                heat === "Loading..." || loading
-                  ? "white"
-                  : parseFloat(heat) <= threshold
-                    ? `rgba(30, 144, 255, ${1 - parseFloat(heat)})` // Dodger blue to white
-                    : `rgba(220, 20, 60, ${Math.sqrt(parseFloat(heat))})`, // Darker red after threshold
-            }}
+            style={
+              hasScore
+                ? {
+                    color:
+                      value <= threshold
+                        ? `rgba(30, 144, 255, ${1 - value})` // Dodger blue to white
+                        : `rgba(220, 20, 60, ${Math.sqrt(value)})`, // Darker red after threshold
+                  }
+                : undefined
+            }
           >
-            {heat === "Loading..." || loading ? "Loading..." : heat}
+            {hasScore ? heat : "—"}
           </p>
           <p className="text-[clamp(0.75rem,1.25vw,1.5rem)]">
             Current: {rowData.prob.toFixed(2)}

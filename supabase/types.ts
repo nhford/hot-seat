@@ -1,6 +1,6 @@
-import type { coachRow, seasonRow } from "../src/types/coaches";
+import type { coachRow, seasonRow, whatIfRow } from "../src/types/coaches";
 
-export type { coachRow, inputData, seasonRow } from "../src/types/coaches";
+export type { coachRow, seasonRow, whatIfRow } from "../src/types/coaches";
 
 export type Json =
   | string
@@ -17,6 +17,12 @@ export type Database = {
         Row: seasonRow;
         Insert: seasonRow;
         Update: seasonRow;
+        Relationships: [];
+      };
+      what_if: {
+        Row: whatIfRow;
+        Insert: whatIfRow;
+        Update: whatIfRow;
         Relationships: [];
       };
     };
