@@ -49,62 +49,12 @@ export type seasonRow = {
   win_pct_proj: number;
 };
 
-/** Named features for the LightGBM What-If /predict API (54 columns). */
-export type inputData = {
-  exp: number;
-  tenure: number;
-  poc: number;
-  prior_hc_stops: number;
-  prior_hc_seasons: number;
-  prior_win_pct: number | null;
-  prior_w_plyf: number;
-  prior_sb_wins: number;
-  prior_sb_apps: number;
-  prior_coy_share: number;
-  career_sb_wins: number;
-  career_sb_apps: number;
-  years_since_last_hc: number | null;
-  prehire_win_pct_1: number | null;
-  prehire_round_1: number | null;
-  prehire_win_pct_2: number | null;
-  prehire_round_2: number | null;
-  prehire_win_pct_3: number | null;
-  prehire_round_3: number | null;
-  age_t0: number | null;
-  playoff_round_t0: number | null;
-  win_pct_t0: number | null;
-  w_plyf_t0: number | null;
-  coy_share_t0: number | null;
-  coy_rank_t0: number | null;
-  tenure_idx_t0: number | null;
-  age_t1: number | null;
-  playoff_round_t1: number | null;
-  win_pct_t1: number | null;
-  w_plyf_t1: number | null;
-  coy_share_t1: number | null;
-  coy_rank_t1: number | null;
-  tenure_idx_t1: number | null;
-  age_t2: number | null;
-  playoff_round_t2: number | null;
-  win_pct_t2: number | null;
-  w_plyf_t2: number | null;
-  coy_share_t2: number | null;
-  coy_rank_t2: number | null;
-  tenure_idx_t2: number | null;
-  age_t3: number | null;
-  playoff_round_t3: number | null;
-  win_pct_t3: number | null;
-  w_plyf_t3: number | null;
-  coy_share_t3: number | null;
-  coy_rank_t3: number | null;
-  tenure_idx_t3: number | null;
-  age_t4: number | null;
-  playoff_round_t4: number | null;
-  win_pct_t4: number | null;
-  w_plyf_t4: number | null;
-  coy_share_t4: number | null;
-  coy_rank_t4: number | null;
-  tenure_idx_t4: number | null;
+/** One cell of the precomputed What If grid. `record` is wins (0–17). */
+export type whatIfRow = {
+  id: string;
+  record: number;
+  round: number;
+  prob: number;
 };
 
 export type coachRow = {

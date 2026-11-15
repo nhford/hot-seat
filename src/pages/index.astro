@@ -4,10 +4,14 @@ import Layout from "@/layout/Layout.astro";
 import { supabase } from "@/lib/supabase";
 import Content from "@/features/standings/Content";
 import WhatIf from "@/features/what-if/WhatIf";
-import type { coachRow, seasonRow } from "@/types/coaches";
+import type { coachRow, seasonRow, whatIfRow } from "@/types/coaches";
 import HowItWorks from "@/features/how-it-works/HowItWorks";
 import Footer from "@/layout/Footer";
-import { buildWhatIfCoaches } from "@/features/what-if/scenario";
+import {
+  buildWhatIfCoaches,
+  buildWhatIfScores,
+  type WhatIfScores,
+} from "@/features/what-if/scenario";
 import WhatIfFallback from "@/features/what-if/WhatIfFallback.astro";
 import { maxYear } from "@/lib/coaches/sort";
 
@@ -18,8 +22,36 @@ const tableName = "coach_year_v2";
 let heat_index: seasonRow[] | null = null;
 let coaches: coachRow[] = [];
 let whatIfSource: ReturnType<typeof buildWhatIfCoaches> = [];
+let whatIfScores: WhatIfScores = {};
 let fallbackYears: number[] = [];
 let fallbackDefaultYear = 0;
+
+/** A missing or unreachable `what_if` table must not take down the rest of the page. */
+async function fetchWhatIfScores(
+  client: NonNullable<typeof supabase>,
+): Promise<WhatIfScores> {
+  const pageSize = 1000;
+  const rows: whatIfRow[] = [];
+  try {
+    for (let from = 0; from < 20_000; from += pageSize) {
+      const { data, error } = await client
+        .from("what_if")
+        .select("id, record, round, prob")
+        .order("id", { ascending: true })
+        .order("record", { ascending: true })
+        .order("round", { ascending: true })
+        .range(from, from + pageSize - 1);
+      if (error || !data) {
+        return from === 0 ? {} : buildWhatIfScores(rows);
+      }
+      rows.push(...data);
+      if (data.length < pageSize) break;
+    }
+    return buildWhatIfScores(rows);
+  } catch {
+    return rows.length ? buildWhatIfScores(rows) : {};
+  }
+}
 
 if (supabase) {
   const { data } = await supabase.from(tableName).select("*");
@@ -27,6 +59,7 @@ if (supabase) {
   coaches = (temp as coachRow[]) ?? [];
   heat_index = data;
   whatIfSource = heat_index ? buildWhatIfCoaches(heat_index) : [];
+  whatIfScores = await fetchWhatIfScores(supabase);
 
   if (heat_index?.length) {
     const currentYear = maxYear(heat_index);
@@ -183,7 +216,11 @@ const btnActive = "bg-white text-black font-bold";
               <h1 class="my-2 text-xl md:text-2xl lg:text-3xl text-center font-bold">
                 What If?
               </h1>
-              <WhatIf source={whatIfSource} client:only="react">
+              <WhatIf
+                source={whatIfSource}
+                scores={whatIfScores}
+                client:only="react"
+              >
                 <WhatIfFallback slot="fallback" />
               </WhatIf>
             </div>
