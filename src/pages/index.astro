@@ -68,7 +68,7 @@ if (supabase) {
       { length: currentYear - minYear + 1 },
       (_, i) => currentYear - i,
     );
-    fallbackDefaultYear = Math.max(minYear, currentYear - 1);
+    fallbackDefaultYear = currentYear;
   }
 }
 

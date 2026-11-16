@@ -28,7 +28,7 @@ export default function Content({ source, coaches }: Props) {
   const numYears = Math.max(1, currentYear - minYear + 1);
 
   const [mode, setMode] = useState<Mode>({ by: "year" });
-  const [year, setYear] = useState(Math.max(minYear, currentYear - 1));
+  const [year, setYear] = useState(currentYear);
   const [team, setTeam] = useState("CRD");
   const [heatOutcome, setHeatOutcome] = useState<heatOutcome>("all");
 
